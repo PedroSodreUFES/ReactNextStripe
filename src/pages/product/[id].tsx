@@ -1,7 +1,9 @@
 import { stripe } from '@/lib/stripe'
 import { ImageContainer, ProductContainer, ProductDetail } from '@/styles/pages/product'
+import axios from 'axios'
 import { GetStaticPaths, GetStaticProps } from 'next'
 import Image from 'next/image'
+import { useState } from 'react'
 import Stripe from 'stripe'
 
 interface ProductProps {
@@ -11,10 +13,34 @@ interface ProductProps {
         imageUrl: string,
         price: string,
         description: string,
+        defaultPriceId: string,
     }
 }
 
-export default function Product({product}: ProductProps ) {
+export default function Product({ product }: ProductProps) {
+    const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
+
+    async function handleBuyProduct() {
+        try {
+            setIsCreatingCheckoutSession(true)
+
+            const response = await axios.post('/api/checkout', {
+                priceId: product.defaultPriceId,
+            })
+
+            const { checkoutUrl } = response.data
+
+            window.location.href = checkoutUrl; // manda pra rota externa
+            
+            /* Se fosse uma rota externa seria:
+            const router = useRouter()
+            router.push("/checkout") */
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            alert("Falha ao redirecionar ao checkout")
+        }
+    }
 
     return (
         <ProductContainer>
@@ -27,7 +53,7 @@ export default function Product({product}: ProductProps ) {
                 <span>{product.price}</span>
 
                 <p>{product.description}</p>
-                <button>Comprar agora</button>
+                <button onClick={handleBuyProduct} disabled={isCreatingCheckoutSession} >Comprar agora</button>
             </ProductDetail>
         </ProductContainer>
     )
@@ -35,8 +61,8 @@ export default function Product({product}: ProductProps ) {
 
 export const getStaticPaths: GetStaticPaths = async () => {
     return {
-        paths : [
-            { params : { id : "prod_RbyMPk9ld151k3"}}
+        paths: [
+            { params: { id: "prod_RbyMPk9ld151k3" } }
         ],
         fallback: true,
     }
@@ -62,6 +88,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
                     currency: 'BRL',
                 }).format(price.unit_amount! / 100),
                 description: product.description,
+                defaultPriceId: price.id,
             }
         },
         revalidate: 60 * 60 * 1, // 1 hora
