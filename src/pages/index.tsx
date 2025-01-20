@@ -5,6 +5,7 @@ import 'keen-slider/keen-slider.min.css'
 import { stripe } from "@/lib/stripe"
 import { GetStaticProps } from "next"
 import Stripe from "stripe"
+import Link from "next/link"
 
 interface HomeProps {
   products: {
@@ -28,18 +29,20 @@ export default function Home({ products }: HomeProps) {
       {
         products.map(product => {
           return (
-            <Product className="keen-slider__slide" key={product.id} >
-              <Image src={product.imageUrl} 
-                     width={520} 
-                     height={480} 
-                     alt={product.name} 
-                     />
+            <Link key={product.id} href={`/product/${product.id}`} prefetch={false} >
+              <Product className="keen-slider__slide" >
+                <Image src={product.imageUrl}
+                  width={520}
+                  height={480}
+                  alt={product.name}
+                />
 
-              <footer>
-                <strong>{product.name}</strong>
-                <span>{product.price}</span>
-              </footer>
-            </Product>
+                <footer>
+                  <strong>{product.name}</strong>
+                  <span>{product.price}</span>
+                </footer>
+              </Product>
+            </Link>
           )
         })
       }
@@ -72,6 +75,6 @@ export const getStaticProps: GetStaticProps = async () => {
       products,
     },
     revalidate: 60 * 10, // página é recriada só após 10min. Antes de 10 min
-                         // antes de 10min se passarem a página fica in cache
+    // antes de 10min se passarem a página fica in cache
   }
 }
