@@ -2,6 +2,7 @@ import { stripe } from '@/lib/stripe'
 import { ImageContainer, ProductContainer, ProductDetail } from '@/styles/pages/product'
 import axios from 'axios'
 import { GetStaticPaths, GetStaticProps } from 'next'
+import Head from 'next/head'
 import Image from 'next/image'
 import { useState } from 'react'
 import Stripe from 'stripe'
@@ -31,31 +32,36 @@ export default function Product({ product }: ProductProps) {
             const { checkoutUrl } = response.data
 
             window.location.href = checkoutUrl; // manda pra rota externa
-            
+
             /* Se fosse uma rota externa seria:
             const router = useRouter()
             router.push("/checkout") */
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             alert("Falha ao redirecionar ao checkout")
         }
     }
 
     return (
-        <ProductContainer>
-            <ImageContainer>
-                <Image src={product.imageUrl} width={520} height={480} alt="" />
-            </ImageContainer>
+        <>
+            <Head>
+                <title>{product.name}</title>
+            </Head>
+            <ProductContainer>
+                <ImageContainer>
+                    <Image src={product.imageUrl} width={520} height={480} alt="" />
+                </ImageContainer>
 
-            <ProductDetail>
-                <h1>{product.name}</h1>
-                <span>{product.price}</span>
+                <ProductDetail>
+                    <h1>{product.name}</h1>
+                    <span>{product.price}</span>
 
-                <p>{product.description}</p>
-                <button onClick={handleBuyProduct} disabled={isCreatingCheckoutSession} >Comprar agora</button>
-            </ProductDetail>
-        </ProductContainer>
+                    <p>{product.description}</p>
+                    <button onClick={handleBuyProduct} disabled={isCreatingCheckoutSession} >Comprar agora</button>
+                </ProductDetail>
+            </ProductContainer>
+        </>
     )
 }
 
